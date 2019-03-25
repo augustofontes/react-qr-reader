@@ -190,17 +190,13 @@ module.exports = class Reader extends Component {
     preview.playsInline = true
 
     const streamTrack = stream.getTracks()[0]
-    const capabilities = streamTrack.getCapabilities();
-    const settings = streamTrack.getSettings();
-    if ('zoom' in capabilities && zoom >= capabilities.zoom.min && zoom <= capabilities.zoom.max ) {
-      settings.zoom = zoom;
-    }
+
     // Assign `stopCamera` so the track can be stopped once component is cleared
     this.stopCamera = streamTrack.stop.bind(streamTrack)
 
     preview.addEventListener('loadstart', this.handleLoadStart)
 
-    this.setState({ mirrorVideo: facingMode == 'user', streamLabel: streamTrack.label })
+    this.setState({ mirrorVideo: facingMode == 'user', streamTrack, streamLabel: streamTrack.label })
   }
   handleLoadStart() {
     const { delay, onLoad } = this.props
@@ -261,6 +257,13 @@ module.exports = class Reader extends Component {
       preview.readyState === preview.HAVE_ENOUGH_DATA
 
     if (legacyMode || previewIsPlaying) {
+      const capabilities = this.state.streamTrack.getCapabilities();
+      const settings = streamTrack.getSettings();
+      if ('zoom' in capabilities && zoom >= capabilities.zoom.min && zoom <= capabilities.zoom.max ) {
+        console.log("Setting zoom");
+        settings.zoom = zoom;
+      }
+
       const ctx = canvas.getContext('2d')
 
       ctx.drawImage(legacyMode ? img : preview, hozOffset, vertOffset, width, height)
