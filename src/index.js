@@ -27,6 +27,7 @@ module.exports = class Reader extends Component {
     facingMode: PropTypes.oneOf(['user', 'environment']),
     legacyMode: PropTypes.bool,
     resolution: PropTypes.number,
+    zoom: PropTypes.number,
     showViewFinder: PropTypes.bool,
     style: PropTypes.any,
     className: PropTypes.string,
@@ -35,6 +36,7 @@ module.exports = class Reader extends Component {
   static defaultProps = {
     delay: 500,
     resolution: 600,
+    zoom: 1,
     facingMode: 'environment',
     showViewFinder: true,
     constraints: null
@@ -164,7 +166,7 @@ module.exports = class Reader extends Component {
   }
   handleVideo(stream) {
     const { preview } = this.els
-    const { facingMode } = this.props
+    const { facingMode, zoom } = this.props
 
     // Preview element hasn't been rendered so wait for it.
     if (!preview) {
@@ -188,6 +190,11 @@ module.exports = class Reader extends Component {
     preview.playsInline = true
 
     const streamTrack = stream.getTracks()[0]
+    const capabilities = streamTrack.getCapabilities();
+    const settings = streamTrack.getSettings();
+    if ('zoom' in capabilities && zoom >= capabilities.zoom.min && zoom <= capabilities.zoom.max ) {
+      settings.zoom = zoom;
+    }
     // Assign `stopCamera` so the track can be stopped once component is cleared
     this.stopCamera = streamTrack.stop.bind(streamTrack)
 
@@ -213,7 +220,7 @@ module.exports = class Reader extends Component {
     preview.removeEventListener('loadstart', this.handleLoadStart)
   }
   check() {
-    const { legacyMode, resolution, delay } = this.props
+    const { legacyMode, resolution, delay, zoom } = this.props
     const { preview, canvas, img } = this.els
 
     // Get image/video dimensions
@@ -249,7 +256,6 @@ module.exports = class Reader extends Component {
       canvas.width = resolution
       canvas.height = resolution
     }
-
 
     const previewIsPlaying = preview &&
       preview.readyState === preview.HAVE_ENOUGH_DATA
