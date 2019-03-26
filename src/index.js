@@ -260,9 +260,8 @@ module.exports = class Reader extends Component {
     if (legacyMode || previewIsPlaying) {
       if (this.state.streamTrack) {
         const capabilities = this.state.streamTrack.getCapabilities();
-        const settings = this.state.streamTrack.getSettings();
         if ('zoom' in capabilities && zoom >= capabilities.zoom.min && zoom <= capabilities.zoom.max ) {
-          settings.zoom = zoom;
+          this.state.streamTrack.applyConstraints({advanced: [ {zoom} ]});
         }
       }
 
